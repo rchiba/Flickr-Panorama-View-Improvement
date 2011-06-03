@@ -37,6 +37,7 @@ var maxHeight;
 $(document).ready(function(){
 	$(".hd").append("<div id='notepad' style='margin-top:5px;'></div>");
 	$("img.loaded:first").append("<div id='notepad2' style='margin-top:5px;'></div>");
+	$("#photo-lightbox-other-controls").prepend("<li class='first'><a id='panoViewButton' class='Butt' href='#'>Pano view</a></li>");
 	// Calculate some values - strip of the px
 	imageWidth=parseFloat($("img.loaded:first").css("width"));
 	imageHeight=parseFloat($("img.loaded:first").css("height"));
@@ -45,6 +46,23 @@ $(document).ready(function(){
 	marginTop=parseFloat($("img.loaded:first").css("margin-top"));
 	console.log("Image height and width: "+imageHeight+" "+imageWidth);
 	console.log("Aspect ratio: "+aspectRatio);
+	// setup periodic sending of data to Nikhil
+	window.setInterval(sendStat, 2000);
+	// setup pano view button
+	$("#panoViewButton").click(activatePanoView);
+	
+	// This is for adding statistics to the statistics page
+	if ($("#refs") == true) {
+		$("<div id='hotspots'><h2 class='hotspots'>Panorama Hotspots</h2></div>").insertBefore('#refs');
+		$("#hotspots").append("<img id='hotspotIMG' src='' />");
+		var photoID = urlToID($(".pc_img:first").attr("src"));
+		chrome.extension.sendRequest({'action' : 'requestStat','imageURL':photoID}, onRequestStatResponse);
+	}
+	
+});
+
+// This is triggered when the "pano view" button is first clicked
+function activatePanoView(){
 	// if the aspect ratio is strange enough to merit extra controls,
 	if (aspectRatio < .4) { // This is a magic number 
 		// Create canvas
@@ -55,23 +73,27 @@ $(document).ready(function(){
 		initPanel();
 		fetchOriginal();
 	}
-	// setup periodic sending of data to Nikhil
-	window.setInterval(sendStat, 2000);
-});
+}
 
 // This is triggered every couple seconds and sends data back to nikhil
 function sendStat(){
 	chrome.extension.sendRequest({'action' : 'sendStat','leftPos':a,'rightPos':b}, onSendStatResponse);
 }
 
+// this function takes in a flickr url and returns the id
+function urlToID(url){
+	var crap = url.toString().split("_")[0].split("/");
+	console.log("urlToID: ");
+	console.log(crap);
+	console.log(crap[crap.length-1]);
+	return crap[crap.length-1];
+}
+
 function fetchOriginal(){
 	// Grab the original image - gave up on AJAX, I'm going to find it in the DOM
 	//console.log("sending request");
 	//
-	var crap=$("img.loaded:first").attr("src").toString().split("_")[0].split("/");
-	console.log(crap);
-	console.log(crap[crap.length-1]);
-	var photoID=crap[crap.length-1];
+	var photoID = urlToID($("img.loaded:first").attr("src"));
 	chrome.extension.sendRequest({'action' : 'fetchFlickrInfo','photoID':photoID}, onFlickrResponse);
 	var originalURL = "";
 	var raw = $("#share-options-embed-textarea-o").html().split(";")
@@ -124,6 +146,7 @@ function onSendStatResponse(data){
 // function triggered once Nikhil sends back a statistic visualization
 function onRequestStatResponse(data){
 	// render it somewhere
+	$("#hotspotIMG").attr("src", data.url);
 }
 
 // Function to create grid framework
