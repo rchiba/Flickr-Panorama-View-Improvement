@@ -1,0 +1,20 @@
+{
+  "name": "Flickr Pano Viewer",
+  "version": "1.0.0",
+  "description": "Sets up a flickr panorama viewer.",
+  "permissions": [
+    "http://*/*"
+  ],
+  "icons": {
+    "48" : "sample-48.png",
+    "128" : "sample-128.png"
+  },
+  "background_page" : "background.html",
+  "content_scripts": [
+    {
+	  "css": ["style.css"],
+      "matches": ["http://www.flickr.com/photos/ryochiba/*"],
+      "js" : ["raphael-min.js","jquery-1.6.1.js","contentscript.js"]
+    }
+  ]
+}

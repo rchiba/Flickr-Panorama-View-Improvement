@@ -1,0 +1,117 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <script>
+      function fetchFlickrInfo(callback,photoID) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(data) {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              var data = xhr.responseText;
+              callback(data);
+            } else {
+              callback(null);
+            }
+          }
+        }
+        // Note that any URL fetched here must be matched by a permission in
+        // the manifest.json file!
+		console.log("fetchFlickrInfo");
+        var url = "http://api.flickr.com/services/rest/?method=flickr.photos.getInfo&api_key=864d7a405719197cbf76b81d3aa01577&photo_id="+photoID.toString();
+		xhr.open('GET', url, true);
+        xhr.send();
+      };
+	  
+	  // requests an image size that fits the screen that's sending the request
+	  function requestLarge(callback,originalURL,maxHeight) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(data) {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              var data = xhr.responseText;
+              callback(data);
+            } else {
+              callback(null);
+            }
+          }
+        }
+        // Note that any URL fetched here must be matched by a permission in
+        // the manifest.json file!
+		
+        var url = "http://nikhil.com/?method=requestLarge&originalURL="+originalURL+"&photo_id="+maxHeight;
+		console.log("requestLarge: "+url);
+		xhr.open('GET', url, true);
+        xhr.send();
+      };
+	  
+	  // Sends a statistic referring to a current view (left and right handle positions)
+	  // Used to see which parts of the panorama are the hottest
+	  function sendStat(callback,leftPos,rightPos) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(data) {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              var data = xhr.responseText;
+              callback(data);
+            } else {
+              callback(null);
+            }
+          }
+        }
+        // Note that any URL fetched here must be matched by a permission in
+        // the manifest.json file!
+        var url = "http://nikhil.com/?method=sendStat&leftPos="+leftPos+"&rightPos="+rightPos;
+		console.log("sendStat: "+url);
+		xhr.open('GET', url, true);
+        xhr.send();
+      };
+	  
+	  // Requests a statistic referring to a current view (left and right handle positions)
+	  // Used to see which parts of the panorama are the hottest
+	  function requestStat(callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(data) {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              var data = xhr.responseText;
+              callback(data);
+            } else {
+              callback(null);
+            }
+          }
+        }
+        // Note that any URL fetched here must be matched by a permission in
+        // the manifest.json file!
+        var url = "http://nikhil.com/?method=requestStat";
+		console.log("requestStat: "+url);
+		xhr.open('GET', url, true);
+        xhr.send();
+      };
+
+      /**
+       * Handles data sent via chrome.extension.sendRequest().
+       * @param request Object Data sent in the request.
+       * @param sender Object Origin of the request.
+       * @param callback Function The method to call when the request completes.
+       */
+      function onRequest(request, sender, callback) {
+        if (request.action == 'fetchFlickrInfo') {
+          fetchFlickrInfo(callback,request.photoID);
+        }
+		else if (request.action == 'requestLarge') {
+          requestLarge(callback,request.originalURL, request.maxHeight);
+        }
+		else if (request.action == 'sendStat') {
+          sendStat(callback,request.leftPos, request.rightPos);
+        }
+		else if (request.action == 'requestStat') {
+          requestStat(callback);
+        }
+      };
+
+      // Wire up the listener.
+      chrome.extension.onRequest.addListener(onRequest);
+    </script>
+  </body>
+</html>
